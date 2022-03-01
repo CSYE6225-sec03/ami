@@ -2,45 +2,6 @@
     "AWSTemplateFormatVersion": "2010-09-09",
     "Description" : "Create a stack for VPC which has 3 subnets for different region and attach subsets to route table, route with destination CIDR block 0.0.0.0/0 and internet gateway as the target, No hardcoded values",
     
-    
-    "Mappings": {
-        "VPCSubnetZones": {
-            "us-east-1": {
-                "subnet1": "us-east-1a",
-                "subnet2": "us-east-1b",
-                "subnet3": "us-east-1c"
-            },
-            "us-east-2": {
-                "subnet1": "us-east-2a",
-                "subnet2": "us-east-2b",
-                "subnet3": "us-east-2c"
-            },
-            "us-west-1"      : { 
-                "subnet1": "us-west-1a",
-                "subnet2": "us-west-1b",
-                "subnet3": "us-west-1c"
-            },
-
-            "us-west-2"      : { 
-                "subnet1": "us-west-2a",
-                "subnet2": "us-west-2b",
-                "subnet3": "us-west-2c"
-            },
-            "eu-west-1"      : {
-                "subnet1": "eu-west-1a",
-                "subnet2": "eu-west-1b",
-                "subnet3": "eu-west-1c"
-            },
-            "sa-east-1"      : {
-                "subnet1": "sa-east-1a",
-                "subnet2": "sa-east-1b",
-                "subnet3": "sa-east-1c"
-            }
-        }
-    },
-    
-    
-    
     "Resources": {
         "VPC": {
             "Type": "AWS::EC2::VPC",
@@ -59,10 +20,13 @@
                 "CidrBlock": {
                     "Ref" : "SubnetCIDR1"
                 },
-                "AvailabilityZone": {
-                    "Fn::FindInMap": ["VPCSubnetZones", {
-                        "Ref": "AWS::Region"
-                    }, {"Ref": "subnetRegionNAME01"}]
+                "AvailabilityZone" : {
+                    "Fn::Select" : [ 
+                      "0", 
+                      { 
+                        "Fn::GetAZs" : "" 
+                      } 
+                    ]
                 },
 		        "MapPublicIpOnLaunch" : "true",
                 "Tags": [
@@ -82,10 +46,13 @@
                 "CidrBlock": {
                     "Ref" : "SubnetCIDR2"
                 },
-                "AvailabilityZone": {
-                    "Fn::FindInMap": ["VPCSubnetZones", {
-                        "Ref": "AWS::Region"
-                    }, {"Ref": "subnetRegionNAME02"}]
+                "AvailabilityZone" : {
+                    "Fn::Select" : [ 
+                      "0", 
+                      { 
+                        "Fn::GetAZs" : "" 
+                      } 
+                    ]
                 },
                 "MapPublicIpOnLaunch" : "true",
                 "Tags": [
@@ -105,10 +72,13 @@
                 "CidrBlock": {
                     "Ref" : "SubnetCIDR3"
                 },
-                "AvailabilityZone": {
-                    "Fn::FindInMap": ["VPCSubnetZones", {
-                        "Ref": "AWS::Region"
-                    }, {"Ref": "subnetRegionNAME03"}]
+                "AvailabilityZone" : {
+                    "Fn::Select" : [ 
+                      "0", 
+                      { 
+                        "Fn::GetAZs" : "" 
+                      } 
+                    ]
                 },
                 "MapPublicIpOnLaunch" : "true",
                 "Tags": [
@@ -239,7 +209,7 @@
         "AMINAME": {
             "Description" : "The AMI name",
             "Type": "String",
-            "Default": "ami-0b417b29c9b10fdf6"
+            "Default": "ami-03849e0419fbf9845"
   
         },
 
@@ -264,25 +234,6 @@
 
         "subnetNAME03": {
             "Description" : "The subnet name",
-            "Type": "String",
-            "Default": "subnet3"
-  
-        },
-
-        "subnetRegionNAME01": {
-            "Description" : "The subnet region name",
-            "Type": "String",
-            "Default": "subnet1"
-  
-        },
-        "subnetRegionNAME02": {
-            "Description" : "The subnet region name",
-            "Type": "String",
-            "Default": "subnet2"
-  
-        },
-        "subnetRegionNAME03": {
-            "Description" : "The subnet region name",
             "Type": "String",
             "Default": "subnet3"
   
