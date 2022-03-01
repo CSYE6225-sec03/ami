@@ -1,6 +1,6 @@
 {
-   "aws_access_key":"",
-   "aws_secert_key":"",
+   "aws_access_key":"{{ env `aws_access_key_id` }}",
+   "aws_secert_key":"{{ env `aws_secret_access_key` }}",
    "aws_region":"us-east-1",
    "subnet_id":"subnet-0aa7d58948d7e2e74",
    "source_ami":"ami-033b95fb8079dc481"
