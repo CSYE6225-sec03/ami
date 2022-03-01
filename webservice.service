@@ -1,0 +1,14 @@
+[Unit]
+Description=CSYE6225 webservice
+After=network.target mysqld.service
+Requires=mysqld.service
+
+[Service]
+ExecStart=/usr/bin/sh /home/ec2-user/webservice_start.sh
+User=ec2-user
+Group=ec2-user
+WorkingDirectory=/home/ec2-user
+
+[Install]
+WantedBy=multi-user.target
+

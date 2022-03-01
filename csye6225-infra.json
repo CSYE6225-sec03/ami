@@ -1,0 +1,334 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description" : "Create a stack for VPC which has 3 subnets for different region and attach subsets to route table, route with destination CIDR block 0.0.0.0/0 and internet gateway as the target, No hardcoded values",
+    
+    
+    "Mappings": {
+        "VPCSubnetZones": {
+            "us-east-1": {
+                "subnet1": "us-east-1a",
+                "subnet2": "us-east-1b",
+                "subnet3": "us-east-1c"
+            },
+            "us-east-2": {
+                "subnet1": "us-east-2a",
+                "subnet2": "us-east-2b",
+                "subnet3": "us-east-2c"
+            },
+            "us-west-1"      : { 
+                "subnet1": "us-west-1a",
+                "subnet2": "us-west-1b",
+                "subnet3": "us-west-1c"
+            },
+
+            "us-west-2"      : { 
+                "subnet1": "us-west-2a",
+                "subnet2": "us-west-2b",
+                "subnet3": "us-west-2c"
+            },
+            "eu-west-1"      : {
+                "subnet1": "eu-west-1a",
+                "subnet2": "eu-west-1b",
+                "subnet3": "eu-west-1c"
+            },
+            "sa-east-1"      : {
+                "subnet1": "sa-east-1a",
+                "subnet2": "sa-east-1b",
+                "subnet3": "sa-east-1c"
+            }
+        }
+    },
+    
+    
+    
+    "Resources": {
+        "VPC": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "CidrBlock": {
+                    "Ref": "VPCCIDR"
+                },
+                "EnableDnsSupport": "true",
+                "EnableDnsHostnames": "true",
+                "Tags":[{"Key" : "Name", "Value": { "Ref": "VPCNAME" }}]
+            }
+        },
+        "PublicSubnet1": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "CidrBlock": {
+                    "Ref" : "SubnetCIDR1"
+                },
+                "AvailabilityZone": {
+                    "Fn::FindInMap": ["VPCSubnetZones", {
+                        "Ref": "AWS::Region"
+                    }, {"Ref": "subnetRegionNAME01"}]
+                },
+		        "MapPublicIpOnLaunch" : "true",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {"Ref": "subnetNAME01"}
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            }
+        },
+        "PublicSubnet2": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "CidrBlock": {
+                    "Ref" : "SubnetCIDR2"
+                },
+                "AvailabilityZone": {
+                    "Fn::FindInMap": ["VPCSubnetZones", {
+                        "Ref": "AWS::Region"
+                    }, {"Ref": "subnetRegionNAME02"}]
+                },
+                "MapPublicIpOnLaunch" : "true",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {"Ref": "subnetNAME02"}
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            }
+        },
+        "PublicSubnet3": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "CidrBlock": {
+                    "Ref" : "SubnetCIDR3"
+                },
+                "AvailabilityZone": {
+                    "Fn::FindInMap": ["VPCSubnetZones", {
+                        "Ref": "AWS::Region"
+                    }, {"Ref": "subnetRegionNAME03"}]
+                },
+                "MapPublicIpOnLaunch" : "true",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {"Ref": "subnetNAME03"}
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            }
+        },
+        "InternetGateway": {
+            "Type": "AWS::EC2::InternetGateway",
+            "Properties":{
+			"Tags":[{"Key" : "Name", "Value": { "Ref": "IGWNAME" }}]
+				}
+        },
+        "VPCGatewayAttachment": {
+            "Type": "AWS::EC2::VPCGatewayAttachment",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "InternetGatewayId": {
+                    "Ref": "InternetGateway"
+                }
+            }
+        },
+        "PublicRouteTable": {
+            "Type": "AWS::EC2::RouteTable",
+            "Properties": {
+		        "Tags":[{"Key" : "Name", "Value": { "Ref": "PUBLICROUTETABLENAME" }}],
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            }
+        },
+        "EC2SrtaSubnet1": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "PublicRouteTable"
+                },
+                "SubnetId": {
+                    "Ref": "PublicSubnet1"
+                }
+            }
+        },
+        "EC2SrtaSubnet2": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "PublicRouteTable"
+                },
+                "SubnetId": {
+                    "Ref": "PublicSubnet2"
+                }
+            }
+        },
+        "EC2SrtaSubnet3": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "PublicRouteTable"
+                },
+                "SubnetId": {
+                    "Ref": "PublicSubnet3"
+                }
+            }
+        },
+        "PublicInternetRoute": {
+            "Type": "AWS::EC2::Route",
+            "Properties": {
+                "DestinationCidrBlock": "0.0.0.0/0",
+                "RouteTableId": {
+                    "Ref": "PublicRouteTable"
+                },
+                "GatewayId": {
+                    "Ref": "InternetGateway"
+                }
+            }
+        },
+        "InstanceSecurityGroup" : {
+            "Type" : "AWS::EC2::SecurityGroup",
+            "Properties" : {
+               "GroupDescription" : "Create application security group",
+               "VpcId" : {"Ref" : "VPC"},
+               "SecurityGroupIngress" : [
+                    { "IpProtocol" : "tcp", "FromPort" : 22, "ToPort" : 22, "CidrIp" : "0.0.0.0/0" },
+                    { "IpProtocol" : "tcp", "FromPort" : 80, "ToPort" : 80, "CidrIp" : "0.0.0.0/0" },
+                    { "IpProtocol" : "tcp", "FromPort" : 443, "ToPort" : 443, "CidrIp" : "0.0.0.0/0" },
+                    { "IpProtocol" : "tcp", "FromPort" : 8000, "ToPort" : 8000, "CidrIp" : "0.0.0.0/0" }
+                ],
+                "Tags":[{"Key" : "Name", "Value": "application"}]
+            }
+        },
+
+        "MyEC2Instance" : {
+            "Type" : "AWS::EC2::Instance",
+            "Properties" : {
+                "ImageId" : {"Ref" : "AMINAME"},
+                "SubnetId": {
+                    "Ref": "PublicSubnet3"
+                },
+                "KeyName" : "KeyPair01",
+                "InstanceType" : "t2.micro",
+                "SecurityGroupIds" : [{"Ref" : "InstanceSecurityGroup"}],
+                "BlockDeviceMappings" : [
+                    {
+                        "DeviceName" : "/dev/xvda",
+                        "Ebs" : {
+                            "VolumeType" : "gp2",
+                            "DeleteOnTermination" : "true",
+                            "VolumeSize" : "20"
+                        }
+                    }
+                ],
+                "Tags":[{"Key" : "Name", "Value": "MyEC2Instance"}]
+            }
+        }
+    },
+    "Parameters": {
+
+        
+
+        "AMINAME": {
+            "Description" : "The AMI name",
+            "Type": "String",
+            "Default": "ami-0b417b29c9b10fdf6"
+  
+        },
+
+        "VPCNAME": {
+          "Description" : "The stack name",
+          "Type": "String",
+          "Default": "myVPC"
+
+        },
+        "subnetNAME01": {
+            "Description" : "The subnet name",
+            "Type": "String",
+            "Default": "subnet1"
+  
+        },
+        
+        "subnetNAME02": {
+            "Description" : "The subnet name",
+            "Type": "String",
+            "Default": "subnet2"
+        },
+
+        "subnetNAME03": {
+            "Description" : "The subnet name",
+            "Type": "String",
+            "Default": "subnet3"
+  
+        },
+
+        "subnetRegionNAME01": {
+            "Description" : "The subnet region name",
+            "Type": "String",
+            "Default": "subnet1"
+  
+        },
+        "subnetRegionNAME02": {
+            "Description" : "The subnet region name",
+            "Type": "String",
+            "Default": "subnet2"
+  
+        },
+        "subnetRegionNAME03": {
+            "Description" : "The subnet region name",
+            "Type": "String",
+            "Default": "subnet3"
+  
+        },
+
+        "IGWNAME": {
+          "Description" : "The Internet Gateway name",
+          "Type": "String",
+          "Default": "myIGW"
+        },
+
+        "PUBLICROUTETABLENAME": {
+          "Description" : "The Public Route Table name",
+          "Type": "String",
+          "Default": "myPRT"
+        },
+
+        "VPCCIDR": {
+            "Type": "String",
+            "Description": "IP Address range for the connected VPC",
+            "MinLength": "9",
+            "MaxLength": "18",
+            "Default": "10.0.0.0/16"
+        },
+
+        "SubnetCIDR1": {
+            "Type": "String",
+            "Description": "IP Address range for the subnet connected VPC",
+            "MinLength": "9",
+            "MaxLength": "18",
+            "Default": "10.0.1.0/24"
+        },
+        "SubnetCIDR2": {
+            "Type": "String",
+            "Description": "IP Address range for the subnet connected VPC",
+            "MinLength": "9",
+            "MaxLength": "18",
+            "Default": "10.0.2.0/24"
+        },
+
+        "SubnetCIDR3": {
+            "Type": "String",
+            "Description": "IP Address range for the subnet connected VPC",
+            "MinLength": "9",
+            "MaxLength": "18",
+            "Default": "10.0.3.0/24"
+        }
+    }
+}
