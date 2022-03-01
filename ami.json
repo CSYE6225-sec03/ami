@@ -1,0 +1,61 @@
+{
+    "variables":{
+        "aws_access_key":"",
+        "aws_secert_key":"",
+        "aws_region":"",
+        "subnet_id":"",
+        "source_ami":"",
+        "ssh_username":"ec2-user",
+        "ami_users": ""
+    },
+    "builders": [
+      {
+        "type": "amazon-ebs",
+        "access_key": "{{user `aws_access_key`}}",
+        "secret_key": "{{user `aws_secert_key`}}",
+        "region": "{{user `aws_region`}}",
+        "source_ami": "{{user `source_ami`}}",
+        "subnet_id": "{{user `subnet_id`}}",
+        "instance_type": "t2.micro",
+        "ssh_username": "{{user `ssh_username`}}",
+        "ami_name": "csye6225_fall2021_{{timestamp}}",
+        "ami_description": "Ubantu AMI for CSYE 6225",
+        "ami_users": ["806874926683", "860803677466"],
+        "launch_block_device_mappings": [
+            {
+                "device_name": "/dev/xvda",
+                "volume_size": 20,
+                "volume_type": "gp2",
+                "delete_on_termination": true
+            }
+        ]
+      }
+    ],
+  
+    "provisioners": [
+        {
+            "type": "file",
+            "source": "./webservice.zip",
+            "destination": "/home/ec2-user/"
+        },
+        {
+            "type": "file",
+            "source": "./webservice.service",
+            "destination": "/home/ec2-user/"
+        },
+        {
+            "type": "file",
+            "source": "./webservice_start.sh",
+            "destination": "/home/ec2-user/"
+        },
+        {
+            "type": "shell",
+            "environment_vars":[
+                "FOO=foo"
+            ],
+            "script": "install_env.sh"
+        }
+      
+    ]
+}
+  
