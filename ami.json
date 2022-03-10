@@ -22,7 +22,7 @@
         "ami_description": "Ubantu AMI for CSYE 6225",
         "ami_users": ["806874926683", "860803677466"],
         "launch_block_device_mappings": [
-            {
+            
                 "device_name": "/dev/xvda",
                 "volume_size": 20,
                 "volume_type": "gp2",
